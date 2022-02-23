@@ -21,26 +21,38 @@ require('packer').startup(function()
 	use 'saadparwaiz1/cmp_luasnip' -- Snippets source for nvim-cmp
 	use 'L3MON4D3/LuaSnip' -- Snippets plugin
 	use 'ellisonleao/gruvbox.nvim' -- Colorscheme
+	use {
+		'lewis6991/gitsigns.nvim', -- Git decorations
+		requires = {
+			'nvim-lua/plenary.nvim'
+		},
+		-- tag = 'release' -- To use the latest release
+	}
 
-	if packer_bootstrap then
-		require('packer').sync()
-	end
+	if packer_bootstrap then require('packer').sync() end
 end)
 
-local opt = vim.opt
-opt.number = true
-opt.relativenumber = true
-opt.cursorline = true
-opt.tabstop = 4
-opt.shiftwidth = 4
-opt.wrap = false
-opt.termguicolors = true
-opt.completeopt = "menu,menuone,noselect"
-opt.mouse = "a"
+-- Options
+vim.opt.cursorline = true
+vim.opt.mouse = "a"
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.termguicolors = true
+-- Options: tab character and indent. See :h 'ts'
+vim.opt.expandtab = false
+vim.opt.shiftwidth = 2
+vim.opt.softtabstop = 0
+vim.opt.tabstop = 2
+-- Options: scroll
+vim.opt.scrolloff = 0
+vim.opt.sidescroll = 8
+vim.opt.sidescrolloff = 0
+vim.opt.wrap = false
+-- Keymaps
+vim.api.nvim_set_keymap('n', '<Tab>', '<C-W>', { noremap = true })
+vim.api.nvim_set_keymap('t', '<Esc>', '<C-\\><C-N>', { noremap = true })
 
-if packer_bootstrap then
-	return
-end
+if packer_bootstrap then return end
 
 -- Diagnostic keymaps
 -- See `:help vim.diagnostic.*` for documentation on any of the below functions
@@ -91,6 +103,7 @@ end
 local luasnip = require 'luasnip'
 
 -- nvim-cmp setup
+vim.opt.completeopt = "menu,menuone,noselect"
 local cmp = require 'cmp'
 cmp.setup {
 	snippet = {
@@ -134,4 +147,37 @@ cmp.setup {
 	},
 }
 
+vim.opt.background = "dark"
 vim.cmd([[colorscheme gruvbox]])
+
+require('gitsigns').setup {
+	on_attach = function(bufnr)
+		local function map(mode, lhs, rhs, opts)
+			opts = vim.tbl_extend('force', {noremap = true, silent = true}, opts or {})
+			vim.api.nvim_buf_set_keymap(bufnr, mode, lhs, rhs, opts)
+		end
+
+		-- Navigation
+		map('n', ']c', "&diff ? ']c' : '<cmd>Gitsigns next_hunk<CR>'", {expr=true})
+		map('n', '[c', "&diff ? '[c' : '<cmd>Gitsigns prev_hunk<CR>'", {expr=true})
+
+		-- Actions
+		map('n', '<leader>hs', ':Gitsigns stage_hunk<CR>')
+		map('v', '<leader>hs', ':Gitsigns stage_hunk<CR>')
+		map('n', '<leader>hr', ':Gitsigns reset_hunk<CR>')
+		map('v', '<leader>hr', ':Gitsigns reset_hunk<CR>')
+		map('n', '<leader>hS', '<cmd>Gitsigns stage_buffer<CR>')
+		map('n', '<leader>hu', '<cmd>Gitsigns undo_stage_hunk<CR>')
+		map('n', '<leader>hR', '<cmd>Gitsigns reset_buffer<CR>')
+		map('n', '<leader>hp', '<cmd>Gitsigns preview_hunk<CR>')
+		map('n', '<leader>hb', '<cmd>lua require"gitsigns".blame_line{full=true}<CR>')
+		map('n', '<leader>tb', '<cmd>Gitsigns toggle_current_line_blame<CR>')
+		map('n', '<leader>hd', '<cmd>Gitsigns diffthis<CR>')
+		map('n', '<leader>hD', '<cmd>lua require"gitsigns".diffthis("~")<CR>')
+		map('n', '<leader>td', '<cmd>Gitsigns toggle_deleted<CR>')
+
+		-- Text object
+		map('o', 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+		map('x', 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+	end
+}
