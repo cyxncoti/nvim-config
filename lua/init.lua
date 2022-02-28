@@ -20,7 +20,6 @@ require('packer').startup(function()
 	use 'hrsh7th/cmp-nvim-lsp' -- LSP source for nvim-cmp
 	use 'saadparwaiz1/cmp_luasnip' -- Snippets source for nvim-cmp
 	use 'L3MON4D3/LuaSnip' -- Snippets plugin
-	use 'ellisonleao/gruvbox.nvim' -- Colorscheme
 	use {
 		'lewis6991/gitsigns.nvim', -- Git decorations
 		requires = {
@@ -28,12 +27,25 @@ require('packer').startup(function()
 		},
 		-- tag = 'release' -- To use the latest release
 	}
+	use 'lukas-reineke/indent-blankline.nvim' -- Indent visualization
+	use 'simrat39/symbols-outline.nvim' -- Code outline with LSP
+	use {
+		'kyazdani42/nvim-tree.lua', -- File explorer
+		requires = {
+			'kyazdani42/nvim-web-devicons', -- optional, for file icon
+		},
+	}
+	use({
+		"catppuccin/nvim", -- Color scheme
+		as = "catppuccin"
+	})
 
 	if packer_bootstrap then require('packer').sync() end
 end)
 
 -- Options
 vim.opt.cursorline = true
+vim.opt.foldcolumn = "auto"
 vim.opt.mouse = "a"
 vim.opt.number = true
 vim.opt.relativenumber = true
@@ -49,7 +61,11 @@ vim.opt.sidescroll = 8
 vim.opt.sidescrolloff = 0
 vim.opt.wrap = false
 -- Keymaps
-vim.api.nvim_set_keymap('n', '<Tab>', '<C-W>', { noremap = true })
+vim.api.nvim_set_keymap('i', '(<CR>', '(<CR>)<Esc>O', { noremap = true })
+vim.api.nvim_set_keymap('i', '{<CR>', '{<CR>}<Esc>O', { noremap = true })
+vim.api.nvim_set_keymap('n', '<Space>n', '<Cmd>NvimTreeToggle<CR>', { noremap = true })
+vim.api.nvim_set_keymap('n', '<Space>s', '<Cmd>SymbolsOutline<CR>', { noremap = true })
+vim.api.nvim_set_keymap('n', '<Space>te', '<Cmd>belowright 10split +terminal<CR>i', { noremap = true })
 vim.api.nvim_set_keymap('t', '<Esc>', '<C-\\><C-N>', { noremap = true })
 
 if packer_bootstrap then return end
@@ -147,9 +163,6 @@ cmp.setup {
 	},
 }
 
-vim.opt.background = "dark"
-vim.cmd([[colorscheme gruvbox]])
-
 require('gitsigns').setup {
 	on_attach = function(bufnr)
 		local function map(mode, lhs, rhs, opts)
@@ -181,3 +194,10 @@ require('gitsigns').setup {
 		map('x', 'ih', ':<C-U>Gitsigns select_hunk<CR>')
 	end
 }
+
+require("indent_blankline").setup()
+
+require'nvim-tree'.setup {}
+
+require("catppuccin").setup()
+vim.cmd[[colorscheme catppuccin]]
